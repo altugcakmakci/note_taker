@@ -8,8 +8,6 @@ notes.get('/', (req, res) => {
 
 // POST Route for a new UX/UI tip
 notes.post('/', (req, res) => {
-  console.log(req.body);
-
   const { title, text, id } = req.body;
 
   if (req.body) {
@@ -27,7 +25,6 @@ notes.post('/', (req, res) => {
 });
 
 notes.delete('/:id', (req, res) => {
-    console.log(req.params.id.split(':'));
     let delId = req.params.id.split(':')[1];
   
     deleteRecord(delId, './db/db.json');
@@ -36,7 +33,6 @@ notes.delete('/:id', (req, res) => {
   });
 
 notes.post('/sort', (req, res) => {
-    console.log(req.body);
     sortRecords(req.body,'./db/db.json');
     res.json(`Records sorted successfully 🚀`);
   });

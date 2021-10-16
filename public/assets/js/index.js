@@ -64,9 +64,6 @@ const sortNote = (noteList) =>
 
 const renderActiveNote = () => {
   hide(saveNoteBtn);
-  console.log("renderactive");
-  console.log(activeNote);
-  console.log(activeNote.id);
 
   if (activeNote.id) {
     noteTitle.setAttribute('readonly', true);
@@ -183,7 +180,6 @@ const renderNoteList = async (notes) => {
     li.dataset.note = JSON.stringify(note);
     if (note.id>maxId){
       maxId = note.id;
-      console.log(maxId);
     }
 
     noteListItems.push(li);
@@ -216,15 +212,12 @@ function compare(a, b) {
 const sortItems = async (notes) =>{
 
   let notesList = await notes.json();
-  console.log(notesList);
   
   if (notesList != null) {
       notesList.sort(compare);
   }
-  console.log(notesList);
 
-  let result = await sortNote(notesList).then(() => {
-    console.log("Sort ok");
+  sortNote(notesList).then(() => {
   getAndRenderNotes();
   renderActiveNote();
   });
