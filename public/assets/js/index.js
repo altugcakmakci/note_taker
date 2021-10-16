@@ -2,13 +2,16 @@ let noteTitle;
 let noteText;
 let saveNoteBtn;
 let newNoteBtn;
+let sortNoteBtn;
 let noteList;
+let maxId = 0;
 
 if (window.location.pathname === '/notes') {
   noteTitle = document.querySelector('.note-title');
   noteText = document.querySelector('.note-textarea');
   saveNoteBtn = document.querySelector('.save-note');
   newNoteBtn = document.querySelector('.new-note');
+  sortNoteBtn = document.querySelector('.sort-note');
   noteList = document.querySelectorAll('.list-container .list-group');
 }
 
@@ -43,15 +46,27 @@ const saveNote = (note) =>
   });
 
 const deleteNote = (id) =>
-  fetch(`/api/notes/${id}`, {
+  fetch(`/api/notes/:${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
     },
   });
 
+const sortNote = (noteList) =>
+  fetch('/api/notes/sort', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(noteList),
+  });
+
 const renderActiveNote = () => {
   hide(saveNoteBtn);
+  console.log("renderactive");
+  console.log(activeNote);
+  console.log(activeNote.id);
 
   if (activeNote.id) {
     noteTitle.setAttribute('readonly', true);
@@ -66,10 +81,15 @@ const renderActiveNote = () => {
   }
 };
 
+const getNextId = () => {
+  return ++maxId;
+}
+
 const handleNoteSave = () => {
   const newNote = {
     title: noteTitle.value,
     text: noteText.value,
+    id: getNextId()
   };
   saveNote(newNote).then(() => {
     getAndRenderNotes();
@@ -161,6 +181,10 @@ const renderNoteList = async (notes) => {
   jsonNotes.forEach((note) => {
     const li = createLi(note.title);
     li.dataset.note = JSON.stringify(note);
+    if (note.id>maxId){
+      maxId = note.id;
+      console.log(maxId);
+    }
 
     noteListItems.push(li);
   });
@@ -173,9 +197,44 @@ const renderNoteList = async (notes) => {
 // Gets notes from the db and renders them to the sidebar
 const getAndRenderNotes = () => getNotes().then(renderNoteList);
 
+
+
+const handleSortNoteView = () =>{
+  getNotes().then(sortItems)
+}
+
+function compare(a, b) {
+  if (a.title.localeCompare(b.title)<0) {
+      return -1;
+  }
+  if (b.title.localeCompare(a.title)<0) {
+      return 1;
+  }
+  return 0;
+}
+
+const sortItems = async (notes) =>{
+
+  let notesList = await notes.json();
+  console.log(notesList);
+  
+  if (notesList != null) {
+      notesList.sort(compare);
+  }
+  console.log(notesList);
+
+  let result = await sortNote(notesList).then(() => {
+    console.log("Sort ok");
+  getAndRenderNotes();
+  renderActiveNote();
+  });
+  
+}
+
 if (window.location.pathname === '/notes') {
   saveNoteBtn.addEventListener('click', handleNoteSave);
   newNoteBtn.addEventListener('click', handleNewNoteView);
+  sortNoteBtn.addEventListener('click', handleSortNoteView);
   noteTitle.addEventListener('keyup', handleRenderSaveBtn);
   noteText.addEventListener('keyup', handleRenderSaveBtn);
 }
